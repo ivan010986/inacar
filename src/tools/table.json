@@ -1,0 +1,98 @@
+{
+    "rubros": [
+        {
+            "id": 3,
+            "nombre": "INGRESOS OPERACIONALES",
+            "subrubros": [
+                {
+                    "id": 4,
+                    "nombre": "ALQUILER BIENES MUEBLES"
+                },
+                {
+                    "id": 5,
+                    "nombre": "CONSTRUCCION"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "nombre": "INGRESOS NO OPERACIONALES",
+            "subrubros": [
+                {
+                    "id": 6,
+                    "nombre": "FINANCIEROS"
+                },
+                {
+                    "id": 7,
+                    "nombre": "ARRENDAMIENTOS"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "nombre": "GASTOS OPERACIONALES DE ADMINISTRACION",
+            "subrubros": [
+                {
+                    "id": 8,
+                    "nombre": "GASTOS DE PERSONAL"
+                },
+                {
+                    "id": 9,
+                    "nombre": "HONORARIOS"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "nombre": "COSTO DIRECTO",
+            "subrubros": [
+                {
+                    "id": 15,
+                    "nombre": "COSTO APLICADO"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "nombre": "COSTO INDIRECTO",
+            "subrubros": [
+                {
+                    "id": 16,
+                    "nombre": "GASTOS DE PERSONAL"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "nombre": "GASTOS OPERACIONALES DE COMERCIALIZACION",
+            "subrubros": [
+                {
+                    "id": 10,
+                    "nombre": "GASTOS DE PERSONAL"
+                },
+                {
+                    "id": 11,
+                    "nombre": "HONORARIOS"
+                },
+                {
+                    "id": 12,
+                    "nombre": "IMPUESTOS"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "nombre": "GASTOS NO OPERACIONALES",
+            "subrubros": [
+                {
+                    "id": 13,
+                    "nombre": "FINANCIEROS"
+                },
+                {
+                    "id": 14,
+                    "nombre": "PERDIDA EN VENTA Y RETIRO DE BIENES"
+                }
+            ]
+        }
+    ]
+}

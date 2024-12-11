@@ -1,0 +1,91 @@
+{
+  "rubros": [
+    {
+      "nombre": "Electrónica",
+      "subrubros": [
+        {
+          "nombre": "Televisores",
+          "items": [
+            "Televisor LED 32 pulgadas",
+            "Televisor OLED 55 pulgadas",
+            "Televisor Smart 43 pulgadas",
+            "Televisor 4K 50 pulgadas",
+            "Televisor Curvo 65 pulgadas",
+            "Televisor QLED 49 pulgadas",
+            "Televisor LED 40 pulgadas"
+          ]
+        },
+        {
+          "nombre": "Computadoras",
+          "items": [
+            "Laptop 14 pulgadas",
+            "Desktop Core i5",
+            "Tablet 10 pulgadas",
+            "All-in-One Core i7",
+            "Netbook 11 pulgadas",
+            "Chromebook 13 pulgadas",
+            "Workstation Xeon"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Hogar",
+      "subrubros": [
+        {
+          "nombre": "Muebles",
+          "items": [
+            "Sofá de 3 plazas",
+            "Mesa de comedor de 6 personas",
+            "Cama matrimonial",
+            "Silla de oficina ergonómica",
+            "Estante para libros",
+            "Mesa de centro",
+            "Cómoda de madera"
+          ]
+        },
+        {
+          "nombre": "Electrodomésticos",
+          "items": [
+            "Refrigerador de doble puerta",
+            "Lavadora automática",
+            "Microondas 30L",
+            "Aspiradora ciclónica",
+            "Cafetera espresso",
+            "Licuadora de alta potencia",
+            "Horno eléctrico"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Deportes",
+      "subrubros": [
+        {
+          "nombre": "Ropa Deportiva",
+          "items": [
+            "Camiseta de entrenamiento",
+            "Pantalones de compresión",
+            "Zapatillas de running",
+            "Shorts deportivos",
+            "Chaqueta cortaviento",
+            "Calcetines deportivos",
+            "Mallas de yoga"
+          ]
+        },
+        {
+          "nombre": "Equipos de Gimnasio",
+          "items": [
+            "Mancuernas ajustables",
+            "Bicicleta estática",
+            "Cinta de correr",
+            "Banco de pesas",
+            "Máquina de remo",
+            "Kettlebells",
+            "Barra olímpica"
+          ]
+        }
+      ]
+    }
+  ]
+}
