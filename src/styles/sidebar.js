@@ -141,7 +141,7 @@ const sidebarStyles = {
         },
     },
     line: {
-        background: '#ffff', width: 1, height: '85%', margin: 12
+        background: '#ffff', width: 1, height: '90%', margin: 12
     },
     contentlogout: {
         display: 'flex', flexDirection: 'row', margin: 15, alignItems: 'center', justifyContent: 'center'

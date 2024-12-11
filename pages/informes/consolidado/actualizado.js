@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/sidebar";
-import { getCookie } from "../../src/utils/cookieUtils";
+import { getCookie } from "../../../src/utils/cookieUtils";
 import {
   Accordion,
   AccordionDetails,
@@ -11,9 +11,9 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LoadingModal from "@/components/loading";
-import informeStyles from "../../src/styles/informe.js";
+import informeStyles from "../../../src/styles/informe.js";
 
-const Consolidado = () => {
+const ConsolidadoActualizado = () => {
   const [data, setData] = useState([]); // For the first dataset
   const [dataActual, setDataActual] = useState([]); // For the second dataset
   const [updatedRubros, setUpdatedRubros] = useState([]);
@@ -798,4 +798,4 @@ const Consolidado = () => {
   );
 };
 
-export default Consolidado;
+export default ConsolidadoActualizado;

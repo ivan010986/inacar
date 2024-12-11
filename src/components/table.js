@@ -6,6 +6,7 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import {
   Accordion,
   Autocomplete,
@@ -49,6 +50,8 @@ const CustomTable = ({
   isLoading,
   setIsLoading,
 }) => {
+  const [opens, setOpens] = useState(false); // Controla si el Snackbar está abierto
+  const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedRubro, setSelectedRubro] = useState("");
   const [selectedSubrubro, setSelectedSubrubro] = useState("");
@@ -74,6 +77,10 @@ const CustomTable = ({
   const saveDataToDB = async (key, data) => {
     const db = await initDB();
     await db.put("rubrosData", data, key);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpen(false); // Cierra el Snackbar
   };
 
   const getDataFromDB = async (key) => {
@@ -427,111 +434,99 @@ const CustomTable = ({
     const newInputValues = { ...inputValues };
     const newMonthlyTotals = [...monthlyTotals];
     const newRubrosTotals = { ...rubrosTotals };
-
+  
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      const ids = row[0] ? String(row[0]).trim().split("'") : []; // Separar los valores por comillas simples
-
+      const ids = row[0] ? String(row[0]).trim().split("'") : [];
       const rubroData = row[1] ? String(row[1]).trim().split(" ") : [];
-      const rubroCodigo = rubroData[0] ? String(rubroData[0]).trim() : "";
+      const rubroCodigo = rubroData[0]?.trim() || "";
       const rubroName = rubroData.slice(1).join(" ").trim();
-
+  
       const subrubroData = row[2] ? String(row[2]).trim().split(" ") : [];
-      const subrubroCodigo = subrubroData[0]
-        ? String(subrubroData[0]).trim()
-        : "";
+      const subrubroCodigo = subrubroData[0]?.trim() || "";
       const subrubroName = subrubroData.slice(1).join(" ").trim();
-
+  
       const auxiliarData = row[3] ? String(row[3]).trim().split(" ") : [];
-      const auxiliarCodigo = auxiliarData[0]
-        ? String(auxiliarData[0]).trim()
-        : "";
+      const auxiliarCodigo = auxiliarData[0]?.trim() || "";
       const auxiliarName = auxiliarData.slice(1).join(" ").trim();
-
-      const itemName = row[4] ? String(row[4]).trim() : "";
-      const itemCodigo = itemName.split(" ")[0] || "";
-
+  
+      const itemName = row[4]?.trim() || "";
       const monthlyValues = row.slice(5, 17);
-
-      const allValuesAreZero = monthlyValues.every(
-        (monthValue) => monthValue === 0 || monthValue === null
-      );
-
-      if (allValuesAreZero) continue;
-
-      // Verificar si el rubro existe
-      // Buscar si el rubro ya existe en updatedRubros
-      let rubro = updatedRubros.find(
-        (s) => s.codigo.toString() === rubroCodigo 
-      );
-      // Si no existe, crea uno nuevo
+  
+      if (monthlyValues.every((val) => val === 0 || val === null)) continue;
+  
+      // Find rubro
+      const rubro = updatedRubros.find((r) => r.codigo.toString() === rubroCodigo);
       if (!rubro) {
-        console.log("no existe el rubro:", rubroCodigo +' '+ rubroName);
+        const mensaje = `No existe el rubro: ${rubroCodigo} ${rubroName}`;
+        console.log(mensaje);
+        setMessage(mensaje);
+        setOpens(true);
+        continue;
       }
-
-      // Verificar si el subrubro existe
-      let subrubro = rubro.subrubros.find(
-        (s) =>
-          s.codigo.toString() === subrubroCodigo
+  
+      // Find subrubro
+      const subrubro = rubro.subrubros.find(
+        (sr) => sr.codigo.toString() === subrubroCodigo
       );
-
-      // Si no existe, crea uno nuevo
       if (!subrubro) {
-        console.log("no existe el subrubro:", subrubroCodigo +' '+ subrubroName);
+        const mensaje = `No existe el subrubro: ${subrubroCodigo} ${subrubroName} en ${rubroCodigo}`;
+        console.log(mensaje);
+        setMessage(mensaje);
+        setOpens(true);
+        continue;
       }
-
-      let auxiliar = subrubro.auxiliares.find(
-        (s) => s.codigo.toString() === auxiliarCodigo
+  
+      // Find auxiliar
+      const auxiliar = subrubro.auxiliares.find(
+        (a) => a.codigo.toString() === auxiliarCodigo
       );
-
       if (!auxiliar) {
-        console.log("no existe el auxiliar:", auxiliarCodigo +' '+ auxiliarName);
+        const mensaje = `No existe el auxiliar: ${auxiliarCodigo} ${auxiliarName}`;
+        console.log(mensaje);
+        setMessage(mensaje);
+        setOpens(true);
+        continue;
       }
-
+  
+      // Process monthly values
       auxiliar.items = auxiliar.items || [];
       const item = { nombre: itemName };
-      // Añadir ítems al auxiliar
+  
       monthlyValues.forEach((monthValue, monthIndex) => {
         const numericValue = monthValue || 0;
-
         if (numericValue !== 0) {
           const inputId = `outlined-basic-${updatedRubros.indexOf(
             rubro
           )}-${rubro.subrubros.indexOf(subrubro)}-${subrubro.auxiliares.indexOf(
             auxiliar
           )}-${auxiliar.items.length}-${monthIndex}`;
-
-          // Organizar los valores y el id a la que pertenece
+  
           newInputValues[inputId] = {
             value: numericValue,
-            centroCostoid: itemCodigo,
-            id: ids[monthIndex] ? parseInt(ids[monthIndex]) : null, // Extrae el id del mes actual si existe
+            centroCostoid: auxiliarCodigo,
+            id: ids[monthIndex] ? parseInt(ids[monthIndex]) : null,
           };
-
-          // Actualizar los totales del rubro
-          if (!newRubrosTotals[rubroName]) {
-            newRubrosTotals[rubroName] = Array(12).fill(0);
-          }
+  
+          newRubrosTotals[rubroName] = newRubrosTotals[rubroName] || Array(12).fill(0);
           newRubrosTotals[rubroName][monthIndex] += numericValue;
-
-          // Actualizar los totales mensuales generales
+  
           newMonthlyTotals[monthIndex] += numericValue;
-
-          // Asignar el valor mensual al ítem
           item[inputId] = numericValue;
         }
       });
-      // Solo agregar el ítem si tiene al menos un valor diferente de 0
+  
       if (Object.keys(item).length > 1) {
         auxiliar.items.push(item);
       }
     }
-
+  
     setUpdatedRubros([...updatedRubros]);
     setInputValues(newInputValues);
     setRubrosTotals(newRubrosTotals);
     setMonthlyTotals(newMonthlyTotals);
   };
+  
 
   const handleUpdatePresupuesto = async () => {
     setIsLoading(true);
@@ -1050,6 +1045,7 @@ const CustomTable = ({
           {snackbarMessage}
         </Alert>
       </Snackbar>
+     
       {isLoading && <LoadingModal open={true} />}
       <SpeedDial
         ariaLabel="SpeedDial basic example"
@@ -1081,6 +1077,13 @@ const CustomTable = ({
           key={"Update"}
           icon={<AutorenewIcon />}
           tooltipTitle={"Actualizado Julio"}
+          onClick={PresupuestoActualizado}
+          disabled={isLoading}
+        />
+        <SpeedDialAction
+          key={"Ejecutado"}
+          icon={<AutoStoriesIcon  />}
+          tooltipTitle={"Ejecutado"}
           onClick={PresupuestoActualizado}
           disabled={isLoading}
         />
@@ -1141,6 +1144,16 @@ const CustomTable = ({
           <Button onClick={handleAddItem}>Aceptar</Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={opens}
+        autoHideDuration={3000} // Duración del Snackbar
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: "100%" }}>
+          {message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
