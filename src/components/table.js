@@ -74,18 +74,8 @@ const CustomTable = ({
   const SELECTED_PRESUPUESTO_KEY = `${currentView}_selectedPresupuesto`;
   const RUBROS_DATA_KEY = `${currentView}_rubrosData`;
 
-  const saveDataToDB = async (key, data) => {
-    const db = await initDB();
-    await db.put("rubrosData", data, key);
-  };
-
   const handleCloseSnackbar = () => {
     setOpen(false); // Cierra el Snackbar
-  };
-
-  const getDataFromDB = async (key) => {
-    const db = await initDB();
-    return await db.get("rubrosData", key);
   };
 
   const deleteDataFromDB = async (store, key) => {
@@ -451,6 +441,7 @@ const CustomTable = ({
       const auxiliarName = auxiliarData.slice(1).join(" ").trim();
   
       const itemName = row[4]?.trim() || "";
+      const itemCodigo = itemName.split(" ")[0] || "";
       const monthlyValues = row.slice(5, 17);
   
       if (monthlyValues.every((val) => val === 0 || val === null)) continue;
@@ -504,7 +495,7 @@ const CustomTable = ({
   
           newInputValues[inputId] = {
             value: numericValue,
-            centroCostoid: auxiliarCodigo,
+            centroCostoid: itemCodigo,
             id: ids[monthIndex] ? parseInt(ids[monthIndex]) : null,
           };
   
@@ -595,7 +586,6 @@ const CustomTable = ({
   
       return result;
     };
-  
     const dataChunks = chunkDataByCuenta(data, 85, 96);
     let totalUpdated = 0;
     let totalCreated = 0;
@@ -1084,7 +1074,7 @@ const CustomTable = ({
           key={"Ejecutado"}
           icon={<AutoStoriesIcon  />}
           tooltipTitle={"Ejecutado"}
-          onClick={PresupuestoActualizado}
+          // onClick={PresupuestoEjecutado}
           disabled={isLoading}
         />
       </SpeedDial>

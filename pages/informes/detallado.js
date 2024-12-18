@@ -21,6 +21,16 @@ const Detallado = () => {
   const [isCuentaVisible, setIsCuentaVisible] = useState(false);
   const [applyPercentage, setApplyPercentage] = useState(true);
 
+  const handleTotalToggle = () => {
+    setIsTotalVisible(!isTotalVisible);
+  };
+  const handleUtilidadToggle = () => {
+    setIsUtilidadVisible(!isUtilidadVisible);
+  };
+  const handleApplyPercentageToggle = (event) => {
+    setApplyPercentage(event.target.checked);
+  };
+  
   const organizeData = (data) => {
     const organizedData = {};
 
@@ -87,15 +97,6 @@ const Detallado = () => {
     return organizedData;
   };
 
-  const handleTotalToggle = () => {
-    setIsTotalVisible(!isTotalVisible);
-  };
-  const handleUtilidadToggle = () => {
-    setIsUtilidadVisible(!isUtilidadVisible);
-  };
-  const handleApplyPercentageToggle = (event) => {
-    setApplyPercentage(event.target.checked);
-  };
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -278,9 +279,22 @@ const Detallado = () => {
   
     return totalsByZone;
   };
-
+  const yearPercentages = {
+    2024: {
+      nacionalConstructora: 0.4,
+      nacionalPromotora: 0.4,
+      nacionalInmobiliaria: 0.2,
+      diferenteNacionalConstructora: 0.4,
+      diferenteNacionalPromotora: 0.5,
+      diferenteNacionalInmobiliaria: 0.1,
+    },
+  };
   const renderData = (data) => {
     return Object.entries(data).map(([year, uens]) => {
+
+      // Obtener porcentajes para el año actual
+      const percentages = yearPercentages[year] || {};
+
       // Calculate the total for "Unidades de Apoyo" to split among other UENs
       const apoyoTotalZonas = uens["Unidades de Apoyo"]?.zones || 0;
       const nacionalTotalsFinal = apoyoTotalZonas.Nacional || {};
@@ -288,13 +302,13 @@ const Detallado = () => {
         Object.entries(apoyoTotalZonas).filter(([zones]) => zones !== "Nacional")
       );
       // Distribuir los totales de "Nacional"
-      const nacionalShareConstructoraFinal = calculateShareFinal(nacionalTotalsFinal, 0.4);
-      const nacionalSharePromotoraFinal = calculateShareFinal(nacionalTotalsFinal, 0.5);
-      const nacionalShareInmobiliariaFinal = calculateShareFinal(nacionalTotalsFinal, 0.1);
+      const nacionalShareConstructoraFinal = calculateShareFinal(nacionalTotalsFinal, percentages.nacionalConstructora);
+      const nacionalSharePromotoraFinal = calculateShareFinal(nacionalTotalsFinal, percentages.nacionalPromotora);
+      const nacionalShareInmobiliariaFinal = calculateShareFinal(nacionalTotalsFinal, percentages.nacionalInmobiliaria);
       // Distribuir los totales de las demás zonas
-      const otherZonesShareConstructoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, 0.4);
-      const otherZonesSharePromotoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, 0.4);
-      const otherZonesShareInmobiliariaFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, 0.2);
+      const otherZonesShareConstructoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalConstructora);
+      const otherZonesSharePromotoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalPromotora);
+      const otherZonesShareInmobiliariaFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalInmobiliaria);
       
       // Calcular los totales por zona de "Unidades de Apoyo"
       const apoyoTotalsByZone = calculateTotalsByZone(uens["Unidades de Apoyo"]?.zones || {});
@@ -303,13 +317,13 @@ const Detallado = () => {
         Object.entries(apoyoTotalsByZone).filter(([zones]) => zones !== "Nacional")
       );
       // Distribuir los totales de "Nacional"
-      const nacionalShareConstructora = calculateShare(nacionalTotals, 0.4);
-      const nacionalSharePromotora = calculateShare(nacionalTotals, 0.4);
-      const nacionalShareInmobiliaria = calculateShare(nacionalTotals, 0.2);
+      const nacionalShareConstructora = calculateShare(nacionalTotals, percentages.nacionalConstructora);
+      const nacionalSharePromotora = calculateShare(nacionalTotals, percentages.nacionalPromotora);
+      const nacionalShareInmobiliaria = calculateShare(nacionalTotals, percentages.nacionalInmobiliaria);
       // Distribuir los totales de las demás zonas
-      const otherZonesShareConstructora = calculateShareExceptoNacional(exceptonacionalZoneTotals, 0.4);
-      const otherZonesSharePromotora = calculateShareExceptoNacional(exceptonacionalZoneTotals, 0.5);
-      const otherZonesShareInmobiliaria = calculateShareExceptoNacional(exceptonacionalZoneTotals, 0.1);
+      const otherZonesShareConstructora = calculateShareExceptoNacional(exceptonacionalZoneTotals, percentages.diferenteNacionalConstructora);
+      const otherZonesSharePromotora = calculateShareExceptoNacional(exceptonacionalZoneTotals, percentages.diferenteNacionalPromotora);
+      const otherZonesShareInmobiliaria = calculateShareExceptoNacional(exceptonacionalZoneTotals, percentages.diferenteNacionalInmobiliaria);
 
       function calculateShareExceptoNacional(totals, percentage) {
         return Object.keys(totals).reduce((acc, zone) => {
