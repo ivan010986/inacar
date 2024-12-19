@@ -130,7 +130,7 @@ const Detallado = () => {
         const data = await presupuestosResponse.json();
         allData = [...allData, ...data.results]; // Concatenate new data
 
-        totalPages = Math.ceil(data.count / 2000); 
+        totalPages = Math.ceil(data.count / 1500); 
         page++; // Move to the next page
       } while (page <= totalPages);
       
