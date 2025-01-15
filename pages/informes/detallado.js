@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/sidebar";
 import { getCookie } from "../../src/utils/cookieUtils";
-import {Accordion,AccordionDetails,AccordionSummary,Typography,FormGroup,FormControlLabel,Checkbox,} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Typography, FormGroup, FormControlLabel, Checkbox, } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LoadingModal from "@/components/loading";
 import informeStyles from "../../src/styles/informe.js";
@@ -30,7 +30,7 @@ const Detallado = () => {
   const handleApplyPercentageToggle = (event) => {
     setApplyPercentage(event.target.checked);
   };
-  
+
   const organizeData = (data) => {
     const organizedData = {};
 
@@ -57,7 +57,7 @@ const Detallado = () => {
           subrubros: {},
         };
       }
-  
+
       if (!organizedData[year][uen].zones[zone].rubros[rubroIndex].subrubros[subrubroIndex]) {
         organizedData[year][uen].zones[zone].rubros[rubroIndex].subrubros[subrubroIndex] = {
           total: 0,
@@ -70,7 +70,7 @@ const Detallado = () => {
           cuentas: {},
         };
       }
-  
+
       // Group by cuentaCodigo
       const cuentaAgrupada = organizedData[year][uen].zones[zone].rubros[rubroIndex].subrubros[subrubroIndex].auxiliares[auxiliarIndex].cuentas;
       if (!cuentaAgrupada[cuentaCodigo]) {
@@ -102,8 +102,7 @@ const Detallado = () => {
       setLoading(true);
       const csrftoken = getCookie("csrftoken");
       const token = localStorage.getItem("token");
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       let allData = [];
       let page = 1;
       let totalPages = 1;
@@ -120,21 +119,27 @@ const Detallado = () => {
             credentials: "include",
           }
         );
-  
+
         if (!presupuestosResponse.ok) {
           const errorText = await presupuestosResponse.text();
           console.error("Error Response Text:", errorText);
           throw new Error(`HTTP error! Status: ${presupuestosResponse.status}`);
         }
-  
+
         const data = await presupuestosResponse.json();
         allData = [...allData, ...data.results]; // Concatenate new data
 
-        totalPages = Math.ceil(data.count / 3000); 
+        totalPages = Math.ceil(data.count / 2000);
         page++; // Move to the next page
       } while (page <= totalPages);
-      
-      setUpdatedRubros(allData[0].updatedRubros);
+
+      // Verificar que allData no esté vacío antes de acceder a updatedRubros
+      if (allData.length > 0) {
+        setUpdatedRubros(allData[0].updatedRubros);
+      } else {
+        setUpdatedRubros([]);
+      }
+
       const organizedData = organizeData(allData);
       setData(organizedData);
     } catch (error) {
@@ -157,16 +162,16 @@ const Detallado = () => {
     let gastosOperacionalesComercialesTotal = 0;
     let ingresosNoOperacionalesTotal = 0;
     let gastosNoOperacionalesTotal = 0;
-  
+
     // Iterar por zonas y rubros para calcular los totales
     Object.values(zones).forEach(({ rubros }) => {
       if (rubros) {
         Object.entries(rubros).forEach(([rubroIndex, rubroData]) => {
           const rubroName = updatedRubros[rubroIndex]?.nombre;
-  
+
           // Validar que rubroData.total sea un número antes de sumarlo
           const total = rubroData?.total || 0;
-  
+
           if (rubroName === "INGRESOS OPERACIONALES") {
             ingresosOperacionalesTotal += total;
           } else if (rubroName === "COSTOS INDIRECTOS") {
@@ -185,16 +190,16 @@ const Detallado = () => {
         });
       }
     });
-  
+
     const costosDeVentacostosIndirectosTotal =
-       costosDeVentaTotal + costosIndirectosTotal;
+      costosDeVentaTotal + costosIndirectosTotal;
     const utilidadBruta =
       ingresosOperacionalesTotal - costosDeVentaTotal - costosIndirectosTotal;
     const utilidadoPerdidaOperacional =
       utilidadBruta - gastosOperacionalesAdministrativosTotal - gastosOperacionalesComercialesTotal;
     const utilidadAntesDeImpuesto =
       utilidadoPerdidaOperacional + ingresosNoOperacionalesTotal - gastosNoOperacionalesTotal;
-  
+
     return {
       costosDeVentacostosIndirectosTotal,
       gastosNoOperacionalesTotal,
@@ -209,10 +214,10 @@ const Detallado = () => {
       gastosOperacionalesComercialesTotal,
     };
   };
-  
+
   const calculateTotalsByZone = (zones) => {
     const totalsByZone = {};
-  
+
     // Iterar por zonas y rubros para calcular los totales por zona
     Object.entries(zones).forEach(([zoneName, { rubros }]) => {
       // Inicializar objeto de totales para la zona si no existe
@@ -229,15 +234,15 @@ const Detallado = () => {
           gastosNoOperacionalesTotal: 0,
         };
       }
-  
+
       // Verificar si rubros está definido
       if (rubros) {
         Object.entries(rubros).forEach(([rubroIndex, rubroData]) => {
           const rubroName = updatedRubros[rubroIndex]?.nombre;
-  
+
           // Validar que rubroData.total sea un número antes de sumarlo
           const total = rubroData?.total || 0;
-  
+
           if (rubroName === "INGRESOS OPERACIONALES") {
             totalsByZone[zoneName].ingresosOperacionalesTotal += total;
           } else if (rubroName === "COSTOS INDIRECTOS") {
@@ -255,7 +260,7 @@ const Detallado = () => {
           }
         });
       }
-  
+
       totalsByZone[zoneName].costosDeVentacostosIndirectosTotal =
         totalsByZone[zoneName].costosDeVentaTotal +
         totalsByZone[zoneName].costosIndirectosTotal;
@@ -265,18 +270,18 @@ const Detallado = () => {
         totalsByZone[zoneName].ingresosOperacionalesTotal -
         totalsByZone[zoneName].costosDeVentaTotal -
         totalsByZone[zoneName].costosIndirectosTotal;
-  
+
       totalsByZone[zoneName].utilidadoPerdidaOperacional =
         totalsByZone[zoneName].utilidadBruta -
         totalsByZone[zoneName].gastosOperacionalesAdministrativosTotal -
         totalsByZone[zoneName].gastosOperacionalesComercialesTotal;
-  
+
       totalsByZone[zoneName].utilidadAntesDeImpuesto =
         totalsByZone[zoneName].utilidadoPerdidaOperacional +
         totalsByZone[zoneName].ingresosNoOperacionalesTotal -
         totalsByZone[zoneName].gastosNoOperacionalesTotal;
     });
-  
+
     return totalsByZone;
   };
   const yearPercentages = {
@@ -299,7 +304,10 @@ const Detallado = () => {
   };
   const renderData = (data) => {
     return Object.entries(data).map(([year, uens]) => {
-
+      // Verificar que updatedRubros esté definido
+      if (!updatedRubros) {
+        return null;
+      }
       // Obtener porcentajes para el año actual
       const percentages = yearPercentages[year] || {};
 
@@ -317,7 +325,7 @@ const Detallado = () => {
       const otherZonesShareConstructoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalConstructora);
       const otherZonesSharePromotoraFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalPromotora);
       const otherZonesShareInmobiliariaFinal = calculateShareExceptoNacionalFinal(exceptonacionalZoneTotalsFinal, percentages.diferenteNacionalInmobiliaria);
-      
+
       // Calcular los totales por zona de "Unidades de Apoyo"
       const apoyoTotalsByZone = calculateTotalsByZone(uens["Unidades de Apoyo"]?.zones || {});
       const nacionalTotals = apoyoTotalsByZone.Nacional || {};
@@ -362,7 +370,7 @@ const Detallado = () => {
           return acc;
         }, {});
       }
-      
+
       function calculateShareFinal(totals, percentage) {
         return Object.keys(totals).reduce((acc, key) => {
           acc[key] = totals[key] * percentage || 0;
@@ -390,7 +398,7 @@ const Detallado = () => {
       const sumInmobiliaria = sumZonesForUEN(otherZonesShareInmobiliaria);
 
       return (
-          <div key={year}>
+        <div key={year}>
           <Accordion key={year} sx={{ marginBottom: "20px" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon sx={{ color: "white" }} />}
@@ -410,7 +418,7 @@ const Detallado = () => {
                     Object.entries(totalsByZone).filter(([zone]) => zone !== "Nacional")
                   );
                   const nacionalZoneTotals = totalsByZone.Nacional || {};
-      
+
                   if (applyPercentage) {
                     if (uen === "Constructora") {
                       Object.keys(nacionalZoneTotals).forEach((key) => {
@@ -432,7 +440,7 @@ const Detallado = () => {
                       });
                     }
                   }
-      
+
                   if (applyPercentage) {
                     if (uen === "Constructora") {
                       Object.keys(exceptonacionalZoneTotals).forEach((zone) => {
@@ -492,10 +500,10 @@ const Detallado = () => {
                       });
                     }
                   }
-                  
+
                   const uenTotals = calculateTotals(zones);
                   let adjustedTotals = { ...uenTotals };
-                  
+
                   // Aplicar porcentajes a adjustedTotals
                   if (applyPercentage) {
                     if (uen === "Constructora") {
@@ -519,7 +527,7 @@ const Detallado = () => {
                   return (
                     <div key={uen} style={{ flex: "1 1 20%", margin: "0.2px" }}>
                       <h4>
-                        <div style={uen == "Constructora"? informeStyles.uenConstructora: uen == "Inmobiliaria"? informeStyles.uenInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.uenUA: informeStyles.uen}>
+                        <div style={uen == "Constructora" ? informeStyles.uenConstructora : uen == "Inmobiliaria" ? informeStyles.uenInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.uenUA : informeStyles.uen}>
                           <Typography sx={{ color: "white" }}>{uen}:</Typography>
                           {isTotalVisible && (
                             <Typography sx={{ color: "white" }}>
@@ -529,7 +537,7 @@ const Detallado = () => {
                         </div>
                       </h4>
                       {isUtilidadVisible && (
-                        <div style={uen == "Constructora"? informeStyles.containerConstructora: uen == "Inmobiliaria"? informeStyles.containerInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.containerUA: informeStyles.container}>
+                        <div style={uen == "Constructora" ? informeStyles.containerConstructora : uen == "Inmobiliaria" ? informeStyles.containerInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerUA : informeStyles.container}>
                           <div style={informeStyles.textContent}>
                             <Typography variant="caption">
                               Ingresos Operacionales:
@@ -546,7 +554,7 @@ const Detallado = () => {
                               {adjustedTotals.costosDeVentacostosIndirectosTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </Typography>
                           </div>
-                          <div style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                          <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                             <Typography variant="caption">
                               Utilidad Bruta:
                             </Typography>
@@ -570,7 +578,7 @@ const Detallado = () => {
                               {adjustedTotals.gastosOperacionalesComercialesTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </Typography>
                           </div>
-                          <div style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                          <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                             <Typography variant="caption">
                               Utilidad ó (PERDIDA) Operacional:
                             </Typography>
@@ -594,7 +602,7 @@ const Detallado = () => {
                               {adjustedTotals.gastosNoOperacionalesTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </Typography>
                           </div>
-                          <div  style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                          <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                             <Typography variant="caption" >
                               Utilidad Antes De Impuesto:
                             </Typography>
@@ -633,19 +641,19 @@ const Detallado = () => {
                         return (
                           <div key={zone}>
                             <h5>
-                              <div style={uen === "Constructora"? informeStyles.uenConstructora: uen === "Inmobiliaria"? informeStyles.uenInmobiliaria: uen === "Unidades de Apoyo"? informeStyles.uenUA: informeStyles.uen}>
+                              <div style={uen === "Constructora" ? informeStyles.uenConstructora : uen === "Inmobiliaria" ? informeStyles.uenInmobiliaria : uen === "Unidades de Apoyo" ? informeStyles.uenUA : informeStyles.uen}>
                                 <Typography sx={{ color: "white" }}>
                                   {zone}:
                                 </Typography>
                                 {isTotalVisible && (
                                   <Typography sx={{ color: "white" }}>
-                                    {adjustedTotalZone.toLocaleString("es-ES", {minimumFractionDigits: 0,maximumFractionDigits: 0,})}
+                                    {adjustedTotalZone.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0, })}
                                   </Typography>
                                 )}
                               </div>
                             </h5>
                             {isUtilidadVisible && (
-                              <div style={uen == "Constructora"? informeStyles.containerConstructora: uen == "Inmobiliaria"? informeStyles.containerInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.containerUA: informeStyles.container}>
+                              <div style={uen == "Constructora" ? informeStyles.containerConstructora : uen == "Inmobiliaria" ? informeStyles.containerInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerUA : informeStyles.container}>
                                 <div style={informeStyles.textContent}>
                                   <Typography variant="caption">
                                     Ingresos Operacionales:
@@ -662,7 +670,7 @@ const Detallado = () => {
                                     {totalsByZone[zone].costosDeVentacostosIndirectosTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                   </Typography>
                                 </div>
-                                <div style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                                <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                                   <Typography variant="caption" >
                                     Utilidad Bruta:
                                   </Typography>
@@ -686,7 +694,7 @@ const Detallado = () => {
                                     {totalsByZone[zone].gastosOperacionalesComercialesTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                   </Typography>
                                 </div>
-                                <div style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                                <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                                   <Typography variant="caption">
                                     Utilidad ó (PERDIDA) Operacional:
                                   </Typography>
@@ -710,7 +718,7 @@ const Detallado = () => {
                                     {totalsByZone[zone].gastosNoOperacionalesTotal.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                   </Typography>
                                 </div>
-                                <div style={uen == "Constructora"? informeStyles.titleZuConstructora: uen == "Inmobiliaria"? informeStyles.titleZuInmobiliaria: uen == "Unidades de Apoyo"? informeStyles.titleZuUA: informeStyles.titleZu}>
+                                <div style={uen == "Constructora" ? informeStyles.titleZuConstructora : uen == "Inmobiliaria" ? informeStyles.titleZuInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.titleZuUA : informeStyles.titleZu}>
                                   <Typography variant="caption">
                                     Utilidad Antes De Impuesto:
                                   </Typography>
@@ -726,11 +734,11 @@ const Detallado = () => {
                                   ([rubroIndex, { total, subrubros }]) => {
                                     const rubro = updatedRubros[rubroIndex];
                                     return (
-                                      <div style={{ margin: "10px" }}key={rubroIndex}>
+                                      <div style={{ margin: "10px" }} key={rubroIndex}>
                                         <div
-                                          style={uen == "Constructora"? informeStyles.containerRConstructora: uen == "Inmobiliaria"? informeStyles.containerRInmobiliaria: uen =="Unidades de Apoyo"? informeStyles.containerRUA: informeStyles.containerR}>
+                                          style={uen == "Constructora" ? informeStyles.containerRConstructora : uen == "Inmobiliaria" ? informeStyles.containerRInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerRUA : informeStyles.containerR}>
                                           <Typography variant="caption" fontWeight='bold'>
-                                            {rubro? rubro.nombre: "Rubro no encontrado"}:
+                                            {rubro ? rubro.nombre : "Rubro no encontrado"}:
                                           </Typography>
 
                                           {isTotalVisible && (
@@ -742,14 +750,14 @@ const Detallado = () => {
                                         {isSubrubroVisible && (
                                           <div>
                                             {Object.entries(subrubros).map(
-                                              ([subrubroIndex, {total: subrubroTotal, auxiliares,},]) => {
+                                              ([subrubroIndex, { total: subrubroTotal, auxiliares, },]) => {
                                                 const subrubro = rubro.subrubros[subrubroIndex];
                                                 return (
                                                   <div key={subrubroIndex}>
                                                     <div
-                                                        style={uen == "Constructora"? informeStyles.containerSRConstructora: uen == "Inmobiliaria"? informeStyles.containerSRInmobiliaria: uen =="Unidades de Apoyo"? informeStyles.containerSRUA: informeStyles.containerSR}>
+                                                      style={uen == "Constructora" ? informeStyles.containerSRConstructora : uen == "Inmobiliaria" ? informeStyles.containerSRInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerSRUA : informeStyles.containerSR}>
                                                       <Typography variant="caption">
-                                                        {subrubro? subrubro.nombre: "Subrubro no encontrado"}:
+                                                        {subrubro ? subrubro.nombre : "Subrubro no encontrado"}:
                                                       </Typography>
                                                       {isTotalVisible && (
                                                         <Typography variant="caption">
@@ -773,9 +781,9 @@ const Detallado = () => {
                                                             return (
                                                               <div key={auxIndex}>
                                                                 <div
-                                                                  style={uen == "Constructora"? informeStyles.containerAConstructora: uen == "Inmobiliaria"? informeStyles.containerAInmobiliaria: uen =="Unidades de Apoyo"? informeStyles.containerAUA: informeStyles.containerA}>
+                                                                  style={uen == "Constructora" ? informeStyles.containerAConstructora : uen == "Inmobiliaria" ? informeStyles.containerAInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerAUA : informeStyles.containerA}>
                                                                   <Typography variant="caption">
-                                                                    {auxiliar? auxiliar.nombre: "Auxiliar no encontrado"}:
+                                                                    {auxiliar ? auxiliar.nombre : "Auxiliar no encontrado"}:
                                                                   </Typography>
                                                                   {isTotalVisible && (
                                                                     <Typography variant="caption">
@@ -786,9 +794,9 @@ const Detallado = () => {
                                                                 {isCuentaVisible && (
                                                                   <div>
                                                                     {Object.entries(cuentas).map(
-                                                                      ([codigo, {nombre, total,},]) => (
+                                                                      ([codigo, { nombre, total, },]) => (
                                                                         <div
-                                                                          style={uen =="Constructora"? informeStyles.containerCCConstructora: uen =="Inmobiliaria"? informeStyles.containerCCInmobiliaria: uen =="Unidades de Apoyo"? informeStyles.containerCCUA: informeStyles.containerCC}>
+                                                                          style={uen == "Constructora" ? informeStyles.containerCCConstructora : uen == "Inmobiliaria" ? informeStyles.containerCCInmobiliaria : uen == "Unidades de Apoyo" ? informeStyles.containerCCUA : informeStyles.containerCC}>
                                                                           <Typography variant="caption">
                                                                             {codigo}{nombre}:
                                                                           </Typography>
@@ -836,115 +844,115 @@ const Detallado = () => {
 
   const exportToExcel = () => {
     const formattedData = [];
-  
+
     // Organize the data for each UEN and its detailed structure
     Object.entries(data).forEach(([year, uens]) => {
       Object.entries(uens).forEach(([uen, { total: uenTotal, zones }]) => {
         // Variables to keep track of the current year and UEN for each row
         let currentYear = year;
         let currentUEN = uen;
-  
+
         // Add a row for the UEN summary
-        formattedData.push({ 
-          Año: currentYear, 
-          UEN: currentUEN, 
-          Zona: "", 
+        formattedData.push({
+          Año: currentYear,
+          UEN: currentUEN,
+          Zona: "",
           CR: "",
-          Rubro: "", 
+          Rubro: "",
           CS: "",
-          Subrubro: "", 
+          Subrubro: "",
           CA: "",
-          Auxiliar: "", 
+          Auxiliar: "",
           CC: "",
-          "Centro Costos": "", 
-          Totales: uenTotal 
+          "Centro Costos": "",
+          Totales: uenTotal
         });
-  
+
         Object.entries(zones).forEach(([zone, { total: zoneTotal, rubros }]) => {
           let currentZone = zone;
-  
+
           // Add a row for each zone within the UEN
-          formattedData.push({ 
+          formattedData.push({
             Año: currentYear,
-            UEN: currentUEN, 
-            Zona: currentZone, 
-            CR: "", 
-            Rubro: "", 
+            UEN: currentUEN,
+            Zona: currentZone,
+            CR: "",
+            Rubro: "",
             CS: "",
-            Subrubro: "", 
+            Subrubro: "",
             CA: "",
-            Auxiliar: "", 
-            CC: "", 
-            "Centro Costos": "", 
-            Totales: zoneTotal 
+            Auxiliar: "",
+            CC: "",
+            "Centro Costos": "",
+            Totales: zoneTotal
           });
-  
+
           Object.entries(rubros).forEach(([rubroIndex, rubroData]) => {
             const rubroName = updatedRubros[rubroIndex]?.nombre;
             const rubroCodigo = updatedRubros[rubroIndex]?.codigo;
             let currentRubroCodigo = rubroCodigo;
             let currentRubroName = rubroName;
-  
+
             // Add a row for each rubro within the zone
-            formattedData.push({ 
+            formattedData.push({
               Año: currentYear,
-              UEN: currentUEN, 
-              Zona: currentZone, 
-              CR: currentRubroCodigo, 
-              Rubro: currentRubroName, 
+              UEN: currentUEN,
+              Zona: currentZone,
+              CR: currentRubroCodigo,
+              Rubro: currentRubroName,
               CS: "",
               Subrubro: "",
-              CA: "", 
-              Auxiliar: "", 
-              CC: "", 
-              "Centro Costos": "", 
-              Totales: rubroData.total 
+              CA: "",
+              Auxiliar: "",
+              CC: "",
+              "Centro Costos": "",
+              Totales: rubroData.total
             });
-  
+
             Object.entries(rubroData.subrubros).forEach(([subrubroIndex, subrubroData]) => {
               const subrubroName = updatedRubros[rubroIndex]?.subrubros?.[subrubroIndex]?.nombre;
               const subrubroCodigo = updatedRubros[rubroIndex]?.subrubros?.[subrubroIndex]?.codigo;
               let currentSubrubroName = subrubroName;
               let currentSubrubroCodigo = subrubroCodigo;
-  
+
               // Add a row for each subrubro within the rubro
-              formattedData.push({ 
+              formattedData.push({
                 Año: currentYear,
-                UEN: currentUEN, 
-                Zona: currentZone, 
-                CR: currentRubroCodigo, 
-                Rubro: currentRubroName, 
+                UEN: currentUEN,
+                Zona: currentZone,
+                CR: currentRubroCodigo,
+                Rubro: currentRubroName,
                 CS: currentSubrubroCodigo,
-                Subrubro: currentSubrubroName, 
+                Subrubro: currentSubrubroName,
                 CA: "",
-                Auxiliar: "", 
-                CC: "", 
-                "Centro Costos": "", 
-                Totales: subrubroData.total 
+                Auxiliar: "",
+                CC: "",
+                "Centro Costos": "",
+                Totales: subrubroData.total
               });
-  
+
               Object.entries(subrubroData.auxiliares).forEach(([auxiliarIndex, auxiliarData]) => {
                 const auxiliarName = updatedRubros[rubroIndex]?.subrubros?.[subrubroIndex]?.auxiliares?.[auxiliarIndex]?.nombre;
                 const auxiliarCodigo = updatedRubros[rubroIndex]?.subrubros?.[subrubroIndex]?.auxiliares?.[auxiliarIndex]?.codigo;
                 let currentAuxiliarName = auxiliarName;
                 let currentAuxiliarCodigo = auxiliarCodigo;
-  
+
                 // Add a row for each auxiliar within the subrubro
-                formattedData.push({ 
+                formattedData.push({
                   Año: currentYear,
-                  UEN: currentUEN, 
-                  Zona: currentZone, 
+                  UEN: currentUEN,
+                  Zona: currentZone,
                   CR: currentRubroCodigo,
-                  Rubro: currentRubroName, 
+                  Rubro: currentRubroName,
                   CS: currentSubrubroCodigo,
-                  Subrubro: currentSubrubroName, 
+                  Subrubro: currentSubrubroName,
                   CA: currentAuxiliarCodigo,
-                  Auxiliar: currentAuxiliarName, 
-                  CC: "", 
-                  "Centro Costos": "", 
-                  Totales: auxiliarData.total 
+                  Auxiliar: currentAuxiliarName,
+                  CC: "",
+                  "Centro Costos": "",
+                  Totales: auxiliarData.total
                 });
-  
+
                 Object.entries(auxiliarData.cuentas).forEach(([cuentaCodigo, cuentaData]) => {
                   // Add a row for each cuenta within the auxiliar
                   formattedData.push({
@@ -952,11 +960,11 @@ const Detallado = () => {
                     UEN: currentUEN,
                     Zona: currentZone,
                     CR: currentRubroCodigo,
-                    Rubro: currentRubroName, 
+                    Rubro: currentRubroName,
                     CS: currentSubrubroCodigo,
-                    Subrubro: currentSubrubroName, 
+                    Subrubro: currentSubrubroName,
                     CA: currentAuxiliarCodigo,
-                    Auxiliar: currentAuxiliarName, 
+                    Auxiliar: currentAuxiliarName,
                     "CC": cuentaCodigo,
                     "Centro Costos": cuentaData.nombre,
                     Totales: cuentaData.total
@@ -966,56 +974,56 @@ const Detallado = () => {
             });
           });
         });
-  
+
         // Add an empty row after each UEN for separation in Excel
         formattedData.push({});
       });
     });
-  
+
     // Create a new workbook and add the data
     const worksheet = XLSX.utils.json_to_sheet(formattedData, { header: ["Año", "UEN", "Zona", "CR", "Rubro", "CS", "Subrubro", "CA", "Auxiliar", "CC", "Centro Costos", "Totales"] });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Informe Detallado");
-  
+
     // Export to Excel
     XLSX.writeFile(workbook, `Informe_Detallado_${new Date().getFullYear()}.xlsx`);
-  };  
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
       <Sidebar />
       <div style={{ display: "flex", width: "100%", flexDirection: "column" }}>
-        <div style={{display: "flex",flexDirection: "row",marginBottom: "10px",justifyContent: "flex-end",alignItems: "center",}}>
-           <FormGroup sx={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
-           
+        <div style={{ display: "flex", flexDirection: "row", marginBottom: "10px", justifyContent: "flex-end", alignItems: "center", }}>
+          <FormGroup sx={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
+
             <FormControlLabel
               key="total" // Unique key
-              control={<Checkbox checked={isTotalVisible}onChange={handleTotalToggle}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isTotalVisible} onChange={handleTotalToggle} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Totales"
             />
             <FormControlLabel
               key="utilidad" // Unique key
-              control={<Checkbox checked={isUtilidadVisible}onChange={handleUtilidadToggle}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isUtilidadVisible} onChange={handleUtilidadToggle} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Proyecciones De Estados"
             />
             <FormControlLabel
               key="rubro" // Unique key
-              control={<Checkbox checked={isRubroVisible}onChange={() => setIsRubroVisible(!isRubroVisible)}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isRubroVisible} onChange={() => setIsRubroVisible(!isRubroVisible)} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Rubros"
             />
             <FormControlLabel
               key="subrubro" // Unique key
-              control={<Checkbox checked={isSubrubroVisible}onChange={() => setIsSubrubroVisible(!isSubrubroVisible)}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isSubrubroVisible} onChange={() => setIsSubrubroVisible(!isSubrubroVisible)} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Subrubros"
             />
             <FormControlLabel
               key="auxiliar" // Unique key
-              control={<Checkbox checked={isAuxiliarVisible}onChange={() => setIsAuxiliarVisible(!isAuxiliarVisible)}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isAuxiliarVisible} onChange={() => setIsAuxiliarVisible(!isAuxiliarVisible)} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Auxiliares"
             />
             <FormControlLabel
               key="cuenta" // Unique key
-              control={<Checkbox checked={isCuentaVisible}onChange={() => setIsCuentaVisible(!isCuentaVisible)}color="primary"style={{ marginLeft: "10px" }}/>}
+              control={<Checkbox checked={isCuentaVisible} onChange={() => setIsCuentaVisible(!isCuentaVisible)} color="primary" style={{ marginLeft: "10px" }} />}
               label="Ver Cuentas"
             />
             <FormControlLabel
@@ -1027,7 +1035,7 @@ const Detallado = () => {
             </Button>
           </FormGroup>
         </div>
-        
+
         {loading ? (
           <p>
             <LoadingModal open={loading} />
